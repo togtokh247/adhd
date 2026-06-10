@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADHD Скрининг Тест</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const ADULT_QUESTIONS = [
+  { id:'a1', section:'Анхаарал төвлөрөлт', text:'Даалгавар эсвэл тоглоом хийх үед удаан анхаарлаа барьж чадахгүй байдаг уу?' },
+  { id:'a2', section:'Анхаарал төвлөрөлт', text:'Ажил эсвэл тоглоом хийх үед үл тоох алдаа гаргах нь элбэг байдаг уу?' },
+  { id:'a3', section:'Анхаарал төвлөрөлт', text:'Шууд хэлэх үед сонсохгүй байдаг мэт санагддаг уу?' },
+  { id:'a4', section:'Анхаарал төвлөрөлт', text:'Зааварчилгааг дагаж, даалгавраа дуусгаж чаддаггүй уу?' },
+  { id:'a5', section:'Анхаарал төвлөрөлт', text:'Ажил, үүргээ зохион байгуулахад хэцүү байдаг уу?' },
+  { id:'a6', section:'Анхаарал төвлөрөлт', text:'Оюуны хүчин чармайлт шаарддаг даалгавраас зайлсхийдэг үү?' },
+  { id:'a7', section:'Анхаарал төвлөрөлт', text:'Ажил эсвэл өдөр тутмын амьдралд хэрэгтэй зүйлсээ байнга хаядаг уу?' },
+  { id:'a8', section:'Анхаарал төвлөрөлт', text:'Гадны зүйлд амархан сатаардаг уу?' },
+  { id:'a9', section:'Анхаарал төвлөрөлт', text:'Өдөр тутмын үйл ажиллагаандаа мартамхай байдаг уу?' },
+  { id:'a10', section:'Хэт идэвхтэй байдал', text:'Суугаа үедээ гар хөлөө тайван байлгаж чаддаггүй уу?' },
+  { id:'a11', section:'Хэт идэвхтэй байдал', text:'Суух ёстой газраасаа байнга босдог уу?' },
+  { id:'a12', section:'Хэт идэвхтэй байдал', text:'Тохиромжгүй газарт гүйх, үсрэх зэргээр хэт идэвхтэй байдаг уу?' },
+  { id:'a13', section:'Хэт идэвхтэй байдал', text:'Чимээгүй байх ёстой газарт чанга яриад байдаг уу?' },
+  { id:'a14', section:'Хэт идэвхтэй байдал', text:'"Мотор"-той мэт байнга хөдөлж байдаг уу?' },
+  { id:'a15', section:'Хэт идэвхтэй байдал', text:'Хэт их ярьдаг уу?' },
+  { id:'a16', section:'Импульс', text:'Асуулт дуусахаас өмнө хариулт хэлдэг үү?' },
+  { id:'a17', section:'Импульс', text:'Ээлжээ хүлээхэд хэцүү байдаг уу?' },
+  { id:'a18', section:'Импульс', text:'Бусдыг тасалдуулж, ярианд нь оролцдог уу?' },
+];
+
+const CHILD_QUESTIONS = [
+  { id:'c1', section:'Анхаарал төвлөрөлт', text:'Сургуульд даалгавраа дуусгаж чаддаггүй уу?' },
+  { id:'c2', section:'Анхаарал төвлөрөлт', text:'Багш ярих үед сонсохгүй байгаа мэт санагддаг уу?' },
+  { id:'c3', section:'Анхаарал төвлөрөлт', text:'Гадны дуу чимээнд амархан сатаардаг уу?' },
+  { id:'c4', section:'Анхаарал төвлөрөлт', text:'Ном, харандаа зэрэг сургуулийн зүйлсийг байнга хаядаг уу?' },
+  { id:'c5', section:'Анхаарал төвлөрөлт', text:'Өдрийн үүрэг даалгавраа мартдаг уу?' },
+  { id:'c6', section:'Анхаарал төвлөрөлт', text:'Нарийн анхаарал шаарддаг даалгавраас зайлсхийдэг үү?' },
+  { id:'c7', section:'Хэт идэвхтэй байдал', text:'Ангид суугаа үедээ байнга хөдөлж байдаг уу?' },
+  { id:'c8', section:'Хэт идэвхтэй байдал', text:'Ангиасаа байнга гарч явдаг уу?' },
+  { id:'c9', section:'Хэт идэвхтэй байдал', text:'Гүйж, үсэрч, бусдын зүйлд хүрч тоглодог уу?' },
+  { id:'c10', section:'Хэт идэвхтэй байдал', text:'Тайван тоглоомонд оролцоход хэцүү байдаг уу?' },
+  { id:'c11', section:'Хэт идэвхтэй байдал', text:'Маш их ярьдаг уу?' },
+  { id:'c12', section:'Импульс', text:'Асуулт дуусахаас өмнө хариулт хэлдэг үү?' },
+  { id:'c13', section:'Импульс', text:'Ээлжийг хүлээж чаддаггүй уу?' },
+  { id:'c14', section:'Импульс', text:'Бусад хүүхдийн тоглоон, яриандаа оролцдог уу?' },
+];
+
+const OPTIONS = ['Хэзээ ч үгүй','Ховор','Заримдаа','Байнга','Үргэлж'];
+const PER_PAGE = 6;
+
+let state = { screen: 'start', ageGroup: null, answers: {}, page: 0 };
+
+function questions() {
+  return state.ageGroup === 'child' ? CHILD_QUESTIONS : ADULT_QUESTIONS;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (state.screen === 'start') renderStart(app);
+  else if (state.screen === 'test') renderTest(app);
+  else renderResult(app);
+}
+
+function renderStart(app) {
+  app.innerHTML = `
+    <div class="header">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">ADHD Скрининг</div>
+        <div class="logo-sub">DSM-5 суурилсан</div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-badge">СКРИНИНГ ТЕСТ</div>
+      <h1>ADHD шалгалт<br>өөрөө хийж үзэх</h1>
+      <p>Анхаарал алдагдал ба хэт идэвхтэй байдлыг мэргэжлийн аргачлалаар үнэлэх</p>
+    </div>
+
+    <div class="card">
+      <div class="age-label">Насны бүлгээ сонгоно уу</div>
+      <div class="age-grid">
+        <div class="age-card ${state.ageGroup==='adult'?'selected':''}" onclick="setAge('adult')">
+          <div style="display:flex;justify-content:space-between">
+            <div class="age-card-icon">🧑</div>
+            <div class="age-check"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div>
+          </div>
+          <div class="age-card-title">Насанд хүрэгч</div>
+          <div class="age-card-sub">18 нас ба түүнээс дээш</div>
+        </div>
+        <div class="age-card ${state.ageGroup==='child'?'selected':''}" onclick="setAge('child')">
+          <div style="display:flex;justify-content:space-between">
+            <div class="age-card-icon">🧒</div>
+            <div class="age-check"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+          </div>
+          <div class="age-card-title">Хүүхэд</div>
+          <div class="age-card-sub">6–17 насны хүүхэд</div>
+        </div>
+      </div>
+      <button class="start-btn" onclick="startTest()" ${!state.ageGroup?'disabled':''}>Тест эхлэх →</button>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Анхааруулга:</strong> Энэхүү тест нь эмнэлгийн оношлогоо биш бөгөөд зөвхөн скрининг зорилготой. Дүнг заавал мэргэжлийн эмчтэй хуваалцаарай.
+    </div>
+  `;
+}
+
+function setAge(g) {
+  state.ageGroup = g;
+  state.answers = {};
+  render();
+}
+
+function startTest() {
+  if (!state.ageGroup) return;
+  state.screen = 'test';
+  state.page = 0;
+  render();
+}
+
+function renderTest(app) {
+  const qs = questions();
+  const total = qs.length;
+  const start = state.page * PER_PAGE;
+  const end = Math.min(start + PER_PAGE, total);
+  const pageQs = qs.slice(start, end);
+  const allAnswered = pageQs.every(q => state.answers[q.id] !== undefined);
+  const answered = Object.keys(state.answers).length;
+  const progress = Math.round((answered / total) * 100);
+  const totalPages = Math.ceil(total / PER_PAGE);
+
+  let html = `
+    <div class="header">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">ADHD Скрининг</div>
+        <div class="logo-sub">${state.ageGroup === 'child' ? 'Хүүхдэд зориулсан' : 'Насанд хүрэгчдэд зориулсан'}</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span>${answered} / ${total} асуулт хариулсан</span>
+        <span>${progress}%</span>
+      </div>
+      <div class="progress-bg"><div class="progress-fill" style="width:${progress}%"></div></div>
+    </div>
+    <div class="section-chip">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+      ${pageQs[0].section}
+    </div>
+  `;
+
+  pageQs.forEach((q, idx) => {
+    html += `<div class="card">
+      <div class="q-num">Асуулт ${start + idx + 1}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="options">`;
+    OPTIONS.forEach((opt, i) => {
+      const sel = state.answers[q.id] === i ? 'selected' : '';
+      html += `<button class="opt-btn ${sel}" onclick="answer('${q.id}',${i})">${opt}</button>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `<div class="nav">
+    ${state.page > 0 ? '<button class="btn-back" onclick="prevPage()">← Өмнөх</button>' : ''}
+    <button class="btn-next" onclick="nextPage()" ${!allAnswered?'disabled':''}>
+      ${end >= total ? 'Дүн харах ✓' : 'Дараах →'}
+    </button>
+    <span class="page-info">${state.page+1} / ${totalPages}</span>
+  </div>`;
+
+  app.innerHTML = html;
+}
+
+function answer(id, val) {
+  state.answers[id] = val;
+  render();
+}
+
+function nextPage() {
+  const qs = questions();
+  if ((state.page + 1) * PER_PAGE >= qs.length) {
+    state.screen = 'result';
+  } else {
+    state.page++;
+  }
+  render();
+}
+
+function prevPage() {
+  if (state.page > 0) { state.page--; render(); }
+}
+
+function renderResult(app) {
+  const qs = questions();
+  const inattentive = qs.filter(q => q.section === 'Анхаарал төвлөрөлт');
+  const hyperactive  = qs.filter(q => q.section === 'Хэт идэвхтэй байдал');
+  const impulsive    = qs.filter(q => q.section === 'Импульс');
+
+  const score = arr => arr.reduce((s,q) => s + (state.answers[q.id] || 0), 0);
+  const maxScore = arr => arr.length * 4;
+  const pct = (s,m) => Math.round((s/m)*100);
+
+  const sI  = score(inattentive);
+  const sH  = score(hyperactive);
+  const sIm = score(impulsive);
+  const sTotal = sI + sH + sIm;
+  const mTotal = maxScore(inattentive) + maxScore(hyperactive) + maxScore(impulsive);
+  const totalPct = pct(sTotal, mTotal);
+
+  function badge(s, m) {
+    const p = pct(s, m);
+    if (p < 40) return ['badge-low', '● Бага хэмжээ'];
+    if (p < 65) return ['badge-mid', '● Дунд хэмжээ'];
+    return ['badge-high', '● Өндөр хэмжээ'];
+  }
+
+  function bar(s, m, color) {
+    return `<div class="score-fill" style="width:${pct(s,m)}%;background:${color}"></div>`;
+  }
+
+  const [bc, bl] = badge(sTotal, mTotal);
+
+  const sections = [
+    { label:'Анхаарал төвлөрөлт', s:sI,  m:maxScore(inattentive), color:'#7C3AED', dot:'#7C3AED' },
+    { label:'Хэт идэвхтэй байдал', s:sH,  m:maxScore(hyperactive),  color:'#D95B2B', dot:'#D95B2B' },
+    { label:'Импульс',             s:sIm, m:maxScore(impulsive),    color:'#059669', dot:'#059669' },
+  ];
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">Тестийн дүн</div>
+        <div class="logo-sub">Скрининг үнэлгээ</div>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center;padding:1.75rem;">
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">Нийт оноо</div>
+      <div class="total-score">${sTotal}<span class="total-denom"> / ${mTotal}</span></div>
+      <div style="margin-top:6px;">
+        <span class="badge ${bc}">${bl}</span>
+      </div>
+      <div style="margin-top:16px;height:8px;background:#F3F4F6;border-radius:99px;overflow:hidden;">
+        <div style="height:8px;border-radius:99px;background:linear-gradient(90deg,#2B7FDD,#60A5FA);width:${totalPct}%;transition:width 0.8s ease;"></div>
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;">${totalPct}% — нийт оноонд харьцуулсан</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Дэд бүлгийн дүн</div>
+      <div class="section-sub">Гурван чиглэлээр үнэлэгдсэн үр дүн</div>
+      ${sections.map(s => `
+        <div class="score-row">
+          <div class="score-dot" style="background:${s.dot}"></div>
+          <span class="score-label">${s.label}</span>
+          <div class="score-track">${bar(s.s, s.m, s.color)}</div>
+          <span class="score-num">${pct(s.s,s.m)}%</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="nav">
+      <button class="btn-back" onclick="restart()">← Дахин эхлэх</button>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Чухал анхааруулга:</strong> Энэ тест нь зөвхөн скрининг зорилготой бөгөөд эмнэлгийн оношлогоог орлохгүй. Өндөр оноо гарсан тохиолдолд мэргэжлийн сэтгэл зүйч эсвэл сэтгэл мэдрэлийн эмчтэй зөвлөлдөнө уу.
+    </div>
+  `;
+}
+
+function restart() {
+  state = { screen: 'start', ageGroup: null, answers: {}, page: 0 };
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
