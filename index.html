@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADHD Скрининг Тест</title>
+<title>ADHD & PHQ-9 Скрининг</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -31,37 +31,38 @@ const ADULT_QUESTIONS = [
   { id:'a18', section:'Импульс', text:'Бусдыг тасалдуулж, ярианд нь оролцдог уу?' },
 ];
 
-const CHILD_QUESTIONS = [
-  { id:'c1', section:'Анхаарал төвлөрөлт', text:'Сургуульд даалгавраа дуусгаж чаддаггүй уу?' },
-  { id:'c2', section:'Анхаарал төвлөрөлт', text:'Багш ярих үед сонсохгүй байгаа мэт санагддаг уу?' },
-  { id:'c3', section:'Анхаарал төвлөрөлт', text:'Гадны дуу чимээнд амархан сатаардаг уу?' },
-  { id:'c4', section:'Анхаарал төвлөрөлт', text:'Ном, харандаа зэрэг сургуулийн зүйлсийг байнга хаядаг уу?' },
-  { id:'c5', section:'Анхаарал төвлөрөлт', text:'Өдрийн үүрэг даалгавраа мартдаг уу?' },
-  { id:'c6', section:'Анхаарал төвлөрөлт', text:'Нарийн анхаарал шаарддаг даалгавраас зайлсхийдэг үү?' },
-  { id:'c7', section:'Хэт идэвхтэй байдал', text:'Ангид суугаа үедээ байнга хөдөлж байдаг уу?' },
-  { id:'c8', section:'Хэт идэвхтэй байдал', text:'Ангиасаа байнга гарч явдаг уу?' },
-  { id:'c9', section:'Хэт идэвхтэй байдал', text:'Гүйж, үсэрч, бусдын зүйлд хүрч тоглодог уу?' },
-  { id:'c10', section:'Хэт идэвхтэй байдал', text:'Тайван тоглоомонд оролцоход хэцүү байдаг уу?' },
-  { id:'c11', section:'Хэт идэвхтэй байдал', text:'Маш их ярьдаг уу?' },
-  { id:'c12', section:'Импульс', text:'Асуулт дуусахаас өмнө хариулт хэлдэг үү?' },
-  { id:'c13', section:'Импульс', text:'Ээлжийг хүлээж чаддаггүй уу?' },
-  { id:'c14', section:'Импульс', text:'Бусад хүүхдийн тоглоон, яриандаа оролцдог уу?' },
+const PHQ9_QUESTIONS = [
+  { id:'p1', section:'Сэтгэл хөдлөл', text:'Юм хийх дургүй болох, өмнө таашаал авч байсан зүйлдээ сонирхол багасах' },
+  { id:'p2', section:'Сэтгэл хөдлөл', text:'Гунигтай, уналтад орсон, найдваргүй мэт санагдах' },
+  { id:'p3', section:'Нойр', text:'Унтаж чадахгүй байх эсвэл хэт их унтах' },
+  { id:'p4', section:'Эрч хүч', text:'Ядарч, эрч хүч дутагдах' },
+  { id:'p5', section:'Хоол тэжээл', text:'Хоолны дур алдах эсвэл хэт их идэх' },
+  { id:'p6', section:'Өөрийгөө үнэлэх', text:'Өөрийгөө дорд үзэх — бүтэлгүйтсэн мэт, гэр бүл, найздаа урвасан мэт санагдах' },
+  { id:'p7', section:'Анхаарал', text:'Уншсан зүйл, ТВ үзэх зэрэгт анхаарлаа төвлөрүүлэхэд хэцүү байх' },
+  { id:'p8', section:'Хөдөлгөөн', text:'Хөдөлгөөн болон яриа удаашрах, эсвэл тайван суужчадахгүй байнга хөдөлж байх' },
+  { id:'p9', section:'Аюулгүй байдал', text:'Өөрийгөө гэмтээх эсвэл амь насаа хохироох тухай бодол төрөх' },
 ];
 
-const OPTIONS = ['Хэзээ ч үгүй','Ховор','Заримдаа','Байнга','Үргэлж'];
+const ADHD_OPTIONS = ['Хэзээ ч үгүй','Ховор','Заримдаа','Байнга','Үргэлж'];
+const PHQ9_OPTIONS  = ['Огт үгүй','Хэд хоног','7-с дээш хоног','Бараг өдөр бүр'];
+
 const PER_PAGE = 6;
 
-let state = { screen: 'start', ageGroup: null, answers: {}, page: 0 };
+let state = { screen: 'start', testType: null, answers: {}, page: 0 };
 
 function questions() {
-  return state.ageGroup === 'child' ? CHILD_QUESTIONS : ADULT_QUESTIONS;
+  return state.testType === 'phq9' ? PHQ9_QUESTIONS : ADULT_QUESTIONS;
+}
+
+function currentOptions() {
+  return state.testType === 'phq9' ? PHQ9_OPTIONS : ADHD_OPTIONS;
 }
 
 function render() {
   const app = document.getElementById('app');
-  if (state.screen === 'start') renderStart(app);
-  else if (state.screen === 'test') renderTest(app);
-  else renderResult(app);
+  if (state.screen === 'start')       renderStart(app);
+  else if (state.screen === 'test')   renderTest(app);
+  else                                renderResult(app);
 }
 
 function renderStart(app) {
@@ -71,38 +72,38 @@ function renderStart(app) {
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
       </div>
       <div>
-        <div class="logo-text">ADHD Скрининг</div>
+        <div class="logo-text">Скрининг Тест</div>
         <div class="logo-sub">DSM-5 суурилсан</div>
       </div>
     </div>
 
     <div class="hero">
       <div class="hero-badge">СКРИНИНГ ТЕСТ</div>
-      <h1>ADHD шалгалт<br>өөрөө хийж үзэх</h1>
-      <p>Анхаарал алдагдал ба хэт идэвхтэй байдлыг мэргэжлийн аргачлалаар үнэлэх</p>
+      <h1>Сэтгэцийн эрүүл мэнд<br>шалгалт өөрөө хийх</h1>
+      <p>Мэргэжлийн аргачлалд суурилсан скрининг үнэлгээ</p>
     </div>
 
     <div class="card">
-      <div class="age-label">Насны бүлгээ сонгоно уу</div>
+      <div class="age-label">Судалгааны төрлөө сонгоно уу</div>
       <div class="age-grid">
-        <div class="age-card ${state.ageGroup==='adult'?'selected':''}" onclick="setAge('adult')">
+        <div class="age-card ${state.testType==='adhd'?'selected':''}" onclick="setType('adhd')">
           <div style="display:flex;justify-content:space-between">
-            <div class="age-card-icon">🧑</div>
-            <div class="age-check"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div>
-          </div>
-          <div class="age-card-title">Насанд хүрэгч</div>
-          <div class="age-card-sub">18 нас ба түүнээс дээш</div>
-        </div>
-        <div class="age-card ${state.ageGroup==='child'?'selected':''}" onclick="setAge('child')">
-          <div style="display:flex;justify-content:space-between">
-            <div class="age-card-icon">🧒</div>
+            <div class="age-card-icon">⚡</div>
             <div class="age-check"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
           </div>
-          <div class="age-card-title">Хүүхэд</div>
-          <div class="age-card-sub">6–17 насны хүүхэд</div>
+          <div class="age-card-title">ADHD</div>
+          <div class="age-card-sub">Анхаарал алдагдал & хэт идэвхтэй байдал</div>
+        </div>
+        <div class="age-card ${state.testType==='phq9'?'selected':''}" onclick="setType('phq9')">
+          <div style="display:flex;justify-content:space-between">
+            <div class="age-card-icon">🧠</div>
+            <div class="age-check"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+          </div>
+          <div class="age-card-title">PHQ-9</div>
+          <div class="age-card-sub">Депресс шалгах судалгаа</div>
         </div>
       </div>
-      <button class="start-btn" onclick="startTest()" ${!state.ageGroup?'disabled':''}>Тест эхлэх →</button>
+      <button class="start-btn" onclick="startTest()" ${!state.testType?'disabled':''}>Тест эхлэх →</button>
     </div>
 
     <div class="disclaimer">
@@ -111,14 +112,14 @@ function renderStart(app) {
   `;
 }
 
-function setAge(g) {
-  state.ageGroup = g;
+function setType(t) {
+  state.testType = t;
   state.answers = {};
   render();
 }
 
 function startTest() {
-  if (!state.ageGroup) return;
+  if (!state.testType) return;
   state.screen = 'test';
   state.page = 0;
   render();
@@ -126,6 +127,7 @@ function startTest() {
 
 function renderTest(app) {
   const qs = questions();
+  const opts = currentOptions();
   const total = qs.length;
   const start = state.page * PER_PAGE;
   const end = Math.min(start + PER_PAGE, total);
@@ -135,14 +137,18 @@ function renderTest(app) {
   const progress = Math.round((answered / total) * 100);
   const totalPages = Math.ceil(total / PER_PAGE);
 
+  const testLabel = state.testType === 'phq9'
+    ? 'PHQ-9 — Сүүлийн 2 долоо хоногт'
+    : 'ADHD — Насанд хүрэгчдэд зориулсан';
+
   let html = `
     <div class="header">
       <div class="logo-icon">
         <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
       </div>
       <div>
-        <div class="logo-text">ADHD Скрининг</div>
-        <div class="logo-sub">${state.ageGroup === 'child' ? 'Хүүхдэд зориулсан' : 'Насанд хүрэгчдэд зориулсан'}</div>
+        <div class="logo-text">Скрининг Тест</div>
+        <div class="logo-sub">${testLabel}</div>
       </div>
     </div>
     <div class="progress-wrap">
@@ -163,7 +169,7 @@ function renderTest(app) {
       <div class="q-num">Асуулт ${start + idx + 1}</div>
       <div class="q-text">${q.text}</div>
       <div class="options">`;
-    OPTIONS.forEach((opt, i) => {
+    opts.forEach((opt, i) => {
       const sel = state.answers[q.id] === i ? 'selected' : '';
       html += `<button class="opt-btn ${sel}" onclick="answer('${q.id}',${i})">${opt}</button>`;
     });
@@ -201,6 +207,92 @@ function prevPage() {
 }
 
 function renderResult(app) {
+  if (state.testType === 'phq9') {
+    renderPHQ9Result(app);
+  } else {
+    renderADHDResult(app);
+  }
+}
+
+function renderPHQ9Result(app) {
+  const qs = PHQ9_QUESTIONS;
+  const sTotal = qs.reduce((s, q) => s + (state.answers[q.id] || 0), 0);
+  const mTotal = qs.length * 3;
+  const pct = Math.round((sTotal / mTotal) * 100);
+
+  function phq9Level(s) {
+    if (s <= 4)  return ['badge-low',  '● Маш бага',       'Депрессийн шинж тэмдэг бага буюу огт байхгүй.'];
+    if (s <= 9)  return ['badge-low',  '● Хөнгөн',         'Хөнгөн зэргийн депрессийн шинж тэмдэг илэрч байна.'];
+    if (s <= 14) return ['badge-mid',  '● Дунд зэрэг',     'Дунд зэргийн депрессийн шинж тэмдэг илэрч байна.'];
+    if (s <= 19) return ['badge-mid',  '● Дундаас дээш',   'Дундаас дээш зэргийн депрессийн шинж тэмдэг илэрч байна.'];
+    return              ['badge-high', '● Хүнд',            'Хүнд зэргийн депрессийн шинж тэмдэг илэрч байна.'];
+  }
+
+  const [bc, bl, desc] = phq9Level(sTotal);
+
+  const sections = [
+    { label:'Сэтгэл хөдлөл',      ids:['p1','p2'], color:'#7C3AED' },
+    { label:'Нойр & Эрч хүч',     ids:['p3','p4'], color:'#D95B2B' },
+    { label:'Хоол & Өөрийгөө үнэлэх', ids:['p5','p6'], color:'#059669' },
+    { label:'Анхаарал & Хөдөлгөөн', ids:['p7','p8'], color:'#2B7FDD' },
+  ];
+
+  function secScore(ids) {
+    return ids.reduce((s, id) => s + (state.answers[id] || 0), 0);
+  }
+  function secMax(ids) { return ids.length * 3; }
+  function secPct(ids) { return Math.round((secScore(ids) / secMax(ids)) * 100); }
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">PHQ-9 Дүн</div>
+        <div class="logo-sub">Депресс скрининг үнэлгээ</div>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center;padding:1.75rem;">
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">Нийт оноо</div>
+      <div class="total-score">${sTotal}<span class="total-denom"> / ${mTotal}</span></div>
+      <div style="margin-top:6px;">
+        <span class="badge ${bc}">${bl}</span>
+      </div>
+      <div style="margin-top:10px;font-size:13px;color:var(--text-secondary);line-height:1.6;">${desc}</div>
+      <div style="margin-top:16px;height:8px;background:#F3F4F6;border-radius:99px;overflow:hidden;">
+        <div style="height:8px;border-radius:99px;background:linear-gradient(90deg,#2B7FDD,#60A5FA);width:${pct}%;transition:width 0.8s ease;"></div>
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;">${pct}% — нийт оноонд харьцуулсан</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Хэсгийн дүн</div>
+      <div class="section-sub">Дэд бүлгээр үнэлсэн үр дүн</div>
+      ${sections.map(s => `
+        <div class="score-row">
+          <div class="score-dot" style="background:${s.color}"></div>
+          <span class="score-label">${s.label}</span>
+          <div class="score-track"><div class="score-fill" style="width:${secPct(s.ids)}%;background:${s.color}"></div></div>
+          <span class="score-num">${secPct(s.ids)}%</span>
+        </div>
+      `).join('')}
+    </div>
+
+    ${state.answers['p9'] >= 1 ? `
+    <div class="card" style="border-color:#FCA5A5;background:#FEF2F2;">
+      <div style="font-size:13px;font-weight:700;color:#991B1B;margin-bottom:6px;">⚠ Чухал</div>
+      <div style="font-size:13px;color:#7F1D1D;line-height:1.6;">9-р асуултад эерэг хариулт өгсөн байна. Нэн даруй мэргэжлийн эмчтэй зөвлөлдөхийг зөвлөж байна.</div>
+    </div>` : ''}
+
+    <div class="nav">
+      <button class="btn-back" onclick="restart()">← Дахин эхлэх</button>
+    </div>
+  `;
+}
+
+function renderADHDResult(app) {
   const qs = questions();
   const inattentive = qs.filter(q => q.section === 'Анхаарал төвлөрөлт');
   const hyperactive  = qs.filter(q => q.section === 'Хэт идэвхтэй байдал');
@@ -242,7 +334,7 @@ function renderResult(app) {
         <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
       </div>
       <div>
-        <div class="logo-text">Тестийн дүн</div>
+        <div class="logo-text">ADHD Дүн</div>
         <div class="logo-sub">Скрининг үнэлгээ</div>
       </div>
     </div>
@@ -275,15 +367,11 @@ function renderResult(app) {
     <div class="nav">
       <button class="btn-back" onclick="restart()">← Дахин эхлэх</button>
     </div>
-
-    <div class="disclaimer">
-      <strong>Чухал анхааруулга:</strong> Энэ тест нь зөвхөн скрининг зорилготой бөгөөд эмнэлгийн оношлогоог орлохгүй. Өндөр оноо гарсан тохиолдолд мэргэжлийн сэтгэл зүйч эсвэл сэтгэл мэдрэлийн эмчтэй зөвлөлдөнө уу.
-    </div>
   `;
 }
 
 function restart() {
-  state = { screen: 'start', ageGroup: null, answers: {}, page: 0 };
+  state = { screen: 'start', testType: null, answers: {}, page: 0 };
   render();
 }
 
